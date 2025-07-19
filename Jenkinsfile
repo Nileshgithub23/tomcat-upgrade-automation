@@ -2,15 +2,16 @@ pipeline {
     agent any
 
     environment {
-        INVENTORY = 'inventory'
-        PLAYBOOK = 'tomcat-upgrade.yml'
+        INVENTORY = "inventory"
+        PLAYBOOK = "tomcat-upgrade.yml"
+        LANG = 'en_US.UTF-8'
+        LC_ALL = 'en_US.UTF-8'
     }
 
     stages {
         stage('Checkout Code') {
             steps {
                 echo 'Pulling code from Git (optional if using local files)...'
-                // Already done automatically in Declarative pipelines
             }
         }
 
@@ -19,9 +20,7 @@ pipeline {
                 sh '''
                 sudo apt update
                 if ! command -v ansible >/dev/null 2>&1; then
-                    sudo apt install -y ansible
-                else
-                    echo "Ansible already installed."
+                  sudo apt install -y ansible
                 fi
                 '''
             }
@@ -31,6 +30,8 @@ pipeline {
             steps {
                 dir("${env.WORKSPACE}") {
                     sh '''
+                    export LANG=en_US.UTF-8
+                    export LC_ALL=en_US.UTF-8
                     ansible-playbook -i ${INVENTORY} ${PLAYBOOK}
                     '''
                 }
@@ -39,11 +40,11 @@ pipeline {
     }
 
     post {
-        success {
-            echo '✅ Tomcat upgrade successful.'
-        }
         failure {
-            echo '❌ Tomcat upgrade failed. Check Jenkins logs.'
+            echo "❌ Tomcat upgrade failed. Check Jenkins logs."
+        }
+        success {
+            echo "✅ Tomcat upgraded successfully!"
         }
     }
 }
