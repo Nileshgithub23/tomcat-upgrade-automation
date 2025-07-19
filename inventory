@@ -1,5 +1,7 @@
 [tomcat]
 192.168.47.142 ansible_user=tomcat-vm ansible_ssh_private_key_file=/var/lib/jenkins/.ssh/tomcat_jenkins_key
+[tomcat]
+192.168.47.142 ansible_user=tomcat-vm ansible_ssh_private_key_file=/var/lib/jenkins/.ssh/tomcat_jenkins_key
 
 
 
