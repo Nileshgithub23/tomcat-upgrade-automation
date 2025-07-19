@@ -2,37 +2,36 @@ pipeline {
     agent any
 
     environment {
-        ANSIBLE_DIR = '/home/master/tomcat-upgrade-automation'
         INVENTORY = 'inventory'
-        PLAYBOOK = 'upgrade-tomcat.yml'
+        PLAYBOOK = 'tomcat-upgrade.yml'
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                echo "Pulling code from Git (optional if using local files)..."
-                // git 'https://github.com/Nileshgithub23/tomcat-upgrade-automation.git'
+                echo 'Pulling code from Git (optional if using local files)...'
+                // Already done automatically in Declarative pipelines
             }
         }
 
         stage('Install Ansible (if not already installed)') {
             steps {
                 sh '''
-                    if ! command -v ansible &> /dev/null; then
-                        sudo apt update
-                        sudo apt install -y ansible
-                    else
-                        echo "Ansible already installed"
-                    fi
+                sudo apt update
+                if ! command -v ansible >/dev/null 2>&1; then
+                    sudo apt install -y ansible
+                else
+                    echo "Ansible already installed."
+                fi
                 '''
             }
         }
 
         stage('Run Ansible Playbook') {
             steps {
-                dir("${ANSIBLE_DIR}") {
+                dir("${env.WORKSPACE}") {
                     sh '''
-                        ansible-playbook -i ${INVENTORY} ${PLAYBOOK}
+                    ansible-playbook -i ${INVENTORY} ${PLAYBOOK}
                     '''
                 }
             }
@@ -41,10 +40,10 @@ pipeline {
 
     post {
         success {
-            echo "✅ Tomcat upgrade playbook executed successfully!"
+            echo '✅ Tomcat upgrade successful.'
         }
         failure {
-            echo "❌ Tomcat upgrade failed. Check Jenkins logs."
+            echo '❌ Tomcat upgrade failed. Check Jenkins logs.'
         }
     }
 }
