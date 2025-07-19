@@ -1,6 +1,5 @@
-[tomcat]
-192.168.47.142 ansible_user=tomcat-vm
 
 [tomcat]
 192.168.47.142 ansible_user=tomcat-vm ansible_ssh_private_key_file=/home/master/.ssh/id_rsa
+
 
