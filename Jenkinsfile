@@ -2,36 +2,31 @@ pipeline {
     agent any
 
     environment {
-        INVENTORY = "inventory"
-        PLAYBOOK = "tomcat_upgrade.yml"
-        KEY = "/var/lib/jenkins/.ssh/tomcat_jenkins_key"
-        LANG = "en_US.UTF-8"
-        LC_ALL = "en_US.UTF-8"
+        INVENTORY = 'inventory'
+        PLAYBOOK = 'tomcat_upgrade.yml'
+        KEY = '/var/lib/jenkins/.ssh/tomcat_jenkins_key'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/Nileshgithub23/tomcat-upgrade-automation.git'
+                git url: 'https://github.com/Nileshgithub23/tomcat-upgrade-automation.git', branch: 'main'
             }
         }
 
         stage('Run Ansible Playbook') {
             steps {
                 sh '''
-                echo "Running Ansible playbook..."
-                ansible-playbook -i ${INVENTORY} ${PLAYBOOK} --private-key=$KEY
+                    echo "Running Ansible playbook..."
+                    ansible-playbook -i ${INVENTORY} ${PLAYBOOK} --private-key=$KEY
                 '''
             }
         }
     }
 
     post {
-        success {
+        always {
             echo '✅ Tomcat upgrade completed successfully.'
-        }
-        failure {
-            echo '❌ Tomcat upgrade failed.'
         }
     }
 }
