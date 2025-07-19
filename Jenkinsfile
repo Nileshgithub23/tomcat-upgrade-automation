@@ -13,7 +13,7 @@ pipeline {
         stage('Run Tomcat Upgrade') {
             steps {
                 sh '''
-                cd tomcat-upgrade-automation
+#               cd tomcat-upgrade-automation
                 ansible-playbook -i inventory tomcat_upgrade.yml
                 '''
             }
