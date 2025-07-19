@@ -2,7 +2,10 @@ pipeline {
     agent any
 
     environment {
-        ANSIBLE_HOST_KEY_CHECKING = 'False'
+        INVENTORY = 'inventory'
+        PLAYBOOK = 'tomcat_upgrade.yml'
+        LANG = 'en_US.UTF-8'
+        LC_ALL = 'en_US.UTF-8'
     }
 
     stages {
@@ -15,11 +18,11 @@ pipeline {
         stage('Install Ansible (if not already installed)') {
             steps {
                 sh '''
-                    if ! command -v ansible > /dev/null; then
-                        sudo apt-get update
-                        sudo apt-get install -y software-properties-common
-                        sudo add-apt-repository --yes --update ppa:ansible/ansible
-                        sudo apt-get install -y ansible
+                    if ! command -v ansible &> /dev/null
+                    then
+                        echo "Installing Ansible..."
+                        sudo apt update
+                        sudo apt install -y ansible
                     else
                         echo "Ansible is already installed"
                     fi
@@ -29,11 +32,10 @@ pipeline {
 
         stage('Run Ansible Playbook') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'tomcat_key', keyFileVariable: 'KEY')]) {
+                withEnv(["KEY=/var/lib/jenkins/.ssh/tomcat_jenkins_key"]) {
                     sh '''
-                        export LANG=en_US.UTF-8
-                        export LC_ALL=en_US.UTF-8
-                        ansible-playbook -i inventory tomcat_upgrade.yml --private-key=$KEY
+                        echo "Running Ansible playbook..."
+                        ansible-playbook -i ${INVENTORY} ${PLAYBOOK} --private-key=$KEY
                     '''
                 }
             }
@@ -42,7 +44,7 @@ pipeline {
 
     post {
         success {
-            echo '✅ Tomcat upgrade completed successfully!'
+            echo '✅ Tomcat Upgrade Successful!'
         }
         failure {
             echo '❌ Build Failed'
