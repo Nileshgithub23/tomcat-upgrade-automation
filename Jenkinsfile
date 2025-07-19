@@ -28,13 +28,11 @@ pipeline {
 
         stage('Run Ansible Playbook') {
             steps {
-                dir("${env.WORKSPACE}") {
-                    sh '''
-                    export LANG=en_US.UTF-8
-                    export LC_ALL=en_US.UTF-8
-                    ansible-playbook -i ${INVENTORY} ${PLAYBOOK}
-                    '''
-                }
+                sh '''
+                export LANG=${LANG}
+                export LC_ALL=${LC_ALL}
+                ansible-playbook -i ${INVENTORY} ${PLAYBOOK}
+                '''
             }
         }
     }
