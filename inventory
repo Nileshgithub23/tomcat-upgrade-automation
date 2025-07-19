@@ -1,0 +1,6 @@
+[tomcat]
+[tomcat]
+192.168.47.142 ansible_ssh_user=root ansible_ssh_pass=<your-root-password>
+
+
+

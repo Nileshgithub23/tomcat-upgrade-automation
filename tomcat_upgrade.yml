@@ -1,0 +1,49 @@
+---
+- name: Tomcat Upgrade Playbook
+  hosts: tomcat
+  become: true
+  vars:
+    tomcat_url: "https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.89/bin/apache-tomcat-9.0.89.tar.gz"
+    tomcat_dest: "/opt"
+    tomcat_symlink: "/opt/tomcat"
+    tomcat_owner: "tomcat-vm"
+    tomcat_group: "tomcat-vm"
+
+  tasks:
+
+    - name: Stop Tomcat service
+      shell: "ps -ef | grep '[t]omcat' | awk '{print $2}' | xargs kill -9"
+      ignore_errors: true
+
+    - name: Backup existing Tomcat
+      shell: "mv {{ tomcat_symlink }} {{ tomcat_symlink }}_backup_$(date +%F_%H%M%S)"
+      args:
+        creates: "{{ tomcat_symlink }}_backup_$(date +%F_%H%M%S)"
+
+    - name: Download new Tomcat archive
+      get_url:
+        url: "{{ tomcat_url }}"
+        dest: "/tmp/apache-tomcat.tar.gz"
+
+    - name: Extract new Tomcat
+      unarchive:
+        src: "/tmp/apache-tomcat.tar.gz"
+        dest: "{{ tomcat_dest }}"
+        remote_src: yes
+
+    - name: Create/Update symlink to new Tomcat
+      file:
+        src: "{{ tomcat_dest }}/apache-tomcat-9.0.89"
+        dest: "{{ tomcat_symlink }}"
+        state: link
+        force: true
+
+    - name: Set permissions
+      file:
+        path: "{{ tomcat_symlink }}"
+        recurse: yes
+        owner: "{{ tomcat_owner }}"
+        group: "{{ tomcat_group }}"
+
+    - name: Start Tomcat
+      shell: "{{ tomcat_symlink }}/bin/startup.sh"
