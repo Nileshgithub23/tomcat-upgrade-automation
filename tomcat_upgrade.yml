@@ -1,34 +1,35 @@
 ---
 - name: Upgrade Apache Tomcat on target VM
   hosts: tomcat
-  become: yes
+  become: true
+
   tasks:
-    - name: Stop Tomcat service
-      ansible.builtin.systemd:
-        name: tomcat
-        state: stopped
-        enabled: true
+    - name: Stop Tomcat (manual shutdown)
+      ansible.builtin.shell: /opt/tomcat/bin/shutdown.sh || true
+      args:
+        executable: /bin/bash
 
-    - name: Download latest Tomcat archive
-      get_url:
-        url: https://downloads.apache.org/tomcat/tomcat-9/v9.0.85/bin/apache-tomcat-9.0.85.tar.gz
-        dest: /tmp/apache-tomcat-9.0.85.tar.gz
+    - name: Remove existing Tomcat directory
+      ansible.builtin.file:
+        path: /opt/tomcat
+        state: absent
 
-    - name: Extract Tomcat
-      unarchive:
+    - name: Extract new Tomcat archive
+      ansible.builtin.unarchive:
         src: /tmp/apache-tomcat-9.0.85.tar.gz
         dest: /opt/
         remote_src: yes
 
-    - name: Set symlink to latest Tomcat
-      file:
-        src: /opt/apache-tomcat-9.0.85
-        dest: /opt/tomcat
-        state: link
-        force: true
+    - name: Rename extracted folder to /opt/tomcat
+      ansible.builtin.command: mv /opt/apache-tomcat-9.0.85 /opt/tomcat
 
-    - name: Start Tomcat service
-      ansible.builtin.systemd:
-        name: tomcat
-        state: started
-        enabled: true
+    - name: Make Tomcat scripts executable
+      ansible.builtin.file:
+        path: /opt/tomcat/bin/
+        recurse: yes
+        mode: '0755'
+
+    - name: Start Tomcat (manual startup)
+      ansible.builtin.shell: /opt/tomcat/bin/startup.sh
+      args:
+        executable: /bin/bash
