@@ -1,24 +1,22 @@
 pipeline {
     agent any
-    environment {
-        INVENTORY = 'inventory'
-        PLAYBOOK = 'tomcat_upgrade.yml'
-    }
+
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/your-user/your-repo.git', branch: 'main'
+                git credentialsId: 'github-credentials',
+                    url: 'https://github.com/Nileshgithub23/tomcat-upgrade-automation.git',
+                    branch: 'main'
             }
         }
 
-        stage('Run Ansible Playbook') {
+        stage('Run Tomcat Upgrade') {
             steps {
-                ansiblePlaybook(
-                    playbook: "${PLAYBOOK}",
-                    inventory: "${INVENTORY}"
-                )
+                sh '''
+                cd tomcat-upgrade-automation
+                ansible-playbook -i inventory tomcat_upgrade.yml
+                '''
             }
         }
     }
 }
-
