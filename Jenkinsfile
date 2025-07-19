@@ -7,6 +7,7 @@ pipeline {
         KEY = "/var/lib/jenkins/.ssh/tomcat_jenkins_key"
         LANG = "en_US.UTF-8"
         LC_ALL = "en_US.UTF-8"
+        ANSIBLE_HOST_KEY_CHECKING = "False"
     }
 
     stages {
@@ -18,10 +19,10 @@ pipeline {
 
         stage('Run Ansible Playbook') {
             steps {
-                sh '''
-                echo "Running Ansible playbook..."
-                ansible-playbook -i ${INVENTORY} ${PLAYBOOK} --private-key=$KEY
-                '''
+                sh """
+                echo "🔧 Running Ansible playbook..."
+                ansible-playbook -i ${INVENTORY} ${PLAYBOOK} --private-key=${KEY}
+                """
             }
         }
     }
