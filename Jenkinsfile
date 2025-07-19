@@ -15,22 +15,19 @@ pipeline {
 
         stage('Install Ansible (if not already installed)') {
             steps {
-                sh '''
-                if ! command -v ansible >/dev/null 2>&1; then
-                  sudo apt update
-                  sudo apt install -y ansible
-                fi
-                '''
+                sh 'command -v ansible || sudo apt-get update && sudo apt-get install -y ansible'
             }
         }
 
         stage('Run Ansible Playbook') {
             steps {
-                sh '''
-                export LANG=en_US.UTF-8
-                export LC_ALL=en_US.UTF-8
-                ansible-playbook -i ${INVENTORY} ${PLAYBOOK}
-                '''
+                withCredentials([sshUserPrivateKey(credentialsId: 'tomcat-ssh-key', keyFileVariable: 'KEY')]) {
+                    sh '''
+                        export LANG=en_US.UTF-8
+                        export LC_ALL=en_US.UTF-8
+                        ansible-playbook -i ${INVENTORY} ${PLAYBOOK} --private-key=$KEY
+                    '''
+                }
             }
         }
     }
@@ -40,7 +37,7 @@ pipeline {
             echo '❌ Build Failed'
         }
         success {
-            echo '✅ Build Succeeded'
+            echo '✅ Tomcat Upgrade Completed Successfully'
         }
     }
 }
