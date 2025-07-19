@@ -5,6 +5,7 @@ pipeline {
         PATH = "/usr/bin:$PATH"           // Ensures Ansible is found
         LANG = "en_US.UTF-8"              // Fix for locale issue
         LC_ALL = "en_US.UTF-8"            // Fix for locale issue
+        ANSIBLE_HOST_KEY_CHECKING = 'False'
     }
 
     stages {
