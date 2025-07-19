@@ -1,0 +1,43 @@
+---
+- name: Upgrade Apache Tomcat on target VM
+  hosts: tomcat
+  become: yes
+
+  tasks:
+    - name: Stop Tomcat if running
+      ansible.builtin.shell: "ps aux | grep tomcat | grep -v grep | awk '{print $2}' | xargs --no-run-if-empty kill -9"
+      ignore_errors: yes
+
+    - name: Remove old Tomcat directory if exists
+      ansible.builtin.file:
+        path: /opt/tomcat
+        state: absent
+
+    - name: Download Tomcat 9
+      ansible.builtin.get_url:
+        url: https://downloads.apache.org/tomcat/tomcat-9/v9.0.85/bin/apache-tomcat-9.0.85.tar.gz
+        dest: /tmp/apache-tomcat-9.tar.gz
+
+    - name: Extract Tomcat
+      ansible.builtin.unarchive:
+        src: /tmp/apache-tomcat-9.tar.gz
+        dest: /opt/
+        remote_src: yes
+        extra_opts: [--strip-components=1]
+        creates: /opt/tomcat
+
+    - name: Rename directory to /opt/tomcat
+      ansible.builtin.command: mv /opt/apache-tomcat-* /opt/tomcat
+      args:
+        removes: /opt/tomcat
+        creates: /opt/tomcat
+
+    - name: Set permissions for Tomcat folder
+      ansible.builtin.file:
+        path: /opt/tomcat
+        owner: tomcat
+        group: tomcat
+        recurse: yes
+
+    - name: Start Tomcat
+      ansible.builtin.shell: "nohup /opt/tomcat/bin/startup.sh &"
