@@ -2,9 +2,7 @@ pipeline {
     agent any
 
     environment {
-        INVENTORY = 'inventory'
-        PLAYBOOK = 'tomcat_upgrade.yml'
-        KEY = '/var/lib/jenkins/.ssh/tomcat_jenkins_key'
+        ANSIBLE_HOST_KEY_CHECKING = 'False'
     }
 
     stages {
@@ -16,17 +14,20 @@ pipeline {
 
         stage('Run Ansible Playbook') {
             steps {
+                echo 'Running Ansible playbook...'
                 sh '''
-                    echo "Running Ansible playbook..."
-                    ansible-playbook -i ${INVENTORY} ${PLAYBOOK} --private-key=$KEY
+                    ansible-playbook -i inventory tomcat_upgrade.yml --private-key=/var/lib/jenkins/.ssh/tomcat_jenkins_key
                 '''
             }
         }
     }
 
     post {
-        always {
+        success {
             echo '✅ Tomcat upgrade completed successfully.'
+        }
+        failure {
+            echo '❌ Tomcat upgrade failed.'
         }
     }
 }
